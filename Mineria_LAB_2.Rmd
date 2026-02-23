@@ -58,3 +58,15 @@ print(paste("Valor de Hopkins:", valor_hopkins))
 ```
 Para analizar la tendencia al agrupamiento, se calculó el estadístico de Hopkins utilizando la totalidad de los datos numéricos escalados, obteniendo un valor de 0.9999. Al estar este resultado sumamente alejado de 0.5 (y prácticamente en 1), se rechaza de forma contundente la hipótesis de aleatoriedad espacial, lo que confirma que las películas poseen una altísima tendencia natural a formar agrupaciones reales y estructuradas. Respecto a la Evaluación Visual de Tendencia (VAT), se tomó la decisión técnica de omitir su generación gráfica, esto se justifica por las altas dimensiones del conjunto de datos (19,883 registros), ya que procesar una matriz de distancias de tal magnitud saturaría la memoria computacional. Por lo tanto, la pertinencia de aplicar algoritmos de clustering queda plenamente respaldada y demostrada por la prueba de Hopkins.
 
+
+## Ejercicio 1.3 Determine cuál es el número de grupos a formar más adecuado para los datos que está trabajando. Haga una gráfica de codo y explique la razón de la elección de la cantidad de clústeres con la que trabajará.
+```{r}
+# Generar la gráfica de codo usando factoextra
+set.seed(123)
+fviz_nbclust(datos_scaled, kmeans, method = "wss", k.max = 6) +
+  labs(title = "Método del Codo para determinar K óptimo",
+       x = "Número de clústeres (K)",
+       y = "Suma total de cuadrados intra-clúster (WSS)") +
+  theme_minimal()
+```
+
