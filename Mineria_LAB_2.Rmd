@@ -133,3 +133,31 @@ fviz_silhouette(sil_km) +
   labs(title = paste("Silueta - K-means (K =", k, ")"))
 ```
 
+El coeficiente de silueta promedio para el modelo K-means con K = 6 fue 0.5467 Dado que valores superiores a 0.5 representan una estructura de agrupamiento sólida, se concluye que el modelo logra identificar patrones diferenciados en los datos.
+
+Al analizar los clústeres individualmente, se observa que algunos presentan una separación muy alta mientras que otros muestran valores más bajos, lo que sugiere cierto grado de solapamiento. No obstante, el comportamiento global del modelo es adecuado y consistente con la segmentación planteada.
+
+## 1.6 Interprete los grupos basado en el conocimiento que tiene de los datos. Recuerde investigar las medidas de tendencia central de las variables continuas y las tablas de frecuencia de las variables categóricas pertenecientes a cada grupo. Identifique hallazgos interesantes debido a las agrupaciones y describa para qué le podría servir.
+
+```{r}
+datos_cluster <- datos
+datos_cluster$cluster <- km$cluster
+resumen_clusters <- datos_cluster %>%
+  group_by(cluster) %>%
+  summarise(
+    n = n(),
+    popularity_media = mean(popularity),
+    budget_media = mean(budget),
+    revenue_media = mean(revenue),
+    runtime_media = mean(runtime),
+    voteCount_media = mean(voteCount),
+    voteAvg_media = mean(voteAvg)
+  )
+
+resumen_clusters
+
+
+
+```
+
+
