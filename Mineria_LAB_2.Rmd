@@ -113,3 +113,23 @@ Al analizar la matriz de confusión y el tamaño de los clústeres, observamos q
 
 **Diferencias en la masa central:** La mayor discrepancia ocurre en la zona de mayor densidad de datos. Por ejemplo, el clúster 5 de K-Medias agrupa a la gran mayoría de sus películas (8,977) dentro del clúster 3 del Jerárquico. Sin embargo, K-Medias fue más estricto al separar otras ~1,900 películas en su propio clúster 6, mientras que el Jerárquico prefirió aglomerarlas en su clúster 1. Esto ocurre porque K-Medias fuerza las agrupaciones en formas esféricas alrededor de sus centroides, mientras que el método aglomerativo de Ward (Jerárquico) une los puntos minimizando la varianza paso a paso.
 
+
+## 1.5 Determine la calidad del agrupamiento hecho por cada algoritmo con el método de la silueta. Discuta los resultados.
+
+```{r}
+k <- 6
+
+set.seed(123)
+km <- kmeans(datos_scaled, centers = k, nstart = 25)
+
+
+sil_km <- silhouette(km$cluster, dist(datos_scaled))
+promedio_sil_km <- mean(sil_km[, "sil_width"])
+
+cat("Silhouette promedio (K-means, K =", k, ") =", round(promedio_sil_km, 4), "\n")
+
+
+fviz_silhouette(sil_km) +
+  labs(title = paste("Silueta - K-means (K =", k, ")"))
+```
+
