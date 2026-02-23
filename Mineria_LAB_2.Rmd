@@ -69,4 +69,39 @@ fviz_nbclust(datos_scaled, kmeans, method = "wss", k.max = 6) +
        y = "Suma total de cuadrados intra-clúster (WSS)") +
   theme_minimal()
 ```
+Al observar la gráfica generada, se identifican descensos importantes en la varianza. Aunque existe una inflexión visible en $K=4$, se decidió trabajar con **K = 6** clústeres. La justificación de esta elección radica en que al llegar a 6 grupos, la varianza intra-clúster alcanza un nivel significativamente bajo (estabilizándose cerca de los 40,000 WSS). Esta cantidad de agrupaciones nos permitirá obtener una segmentación más fina y detallada de las películas, separando mejor los distintos nichos (como blockbusters extremos vs. películas independientes) sin caer en una sobredivisión de los datos.
+
+## Ejercicio 1.4 Utilice los algoritmos k-medias y clustering jerárquico para agrupar. Compare los resultados generados por cada uno.
+
+## Ejercicio 1.4 Utilice los algoritmos k-medias y clustering jerárquico para agrupar. Compare los resultados generados por cada uno.
+
+```{r}
+# Definir K óptimo
+k_optimo <- 6 
+
+# --- 1. ALGORITMO K-MEDIAS ---
+set.seed(123)
+# Aplicar k-medias a todo el dataset
+km_res <- kmeans(datos_scaled, centers = k_optimo, nstart = 25)
+datos$Cluster_KMeans <- as.factor(km_res$cluster)
+
+# --- 2. CLUSTERING JERÁRQUICO ---
+# Calcular matriz de distancias y clustering para todo el dataset
+dist_mat <- dist(datos_scaled, method = "euclidean")
+hc_res <- hclust(dist_mat, method = "ward.D2") 
+hc_clusters <- cutree(hc_res, k = k_optimo)
+
+# Guardar resultados en el dataset original
+datos$Cluster_Jerarquico <- as.factor(hc_clusters)
+
+# --- 3. COMPARACIÓN DE RESULTADOS ---
+cat("--- Clústeres K-Medias ---\n")
+print(table(datos$Cluster_KMeans))
+
+cat("\n--- Clústeres Jerárquico ---\n")
+print(table(datos$Cluster_Jerarquico))
+
+cat("\n--- Matriz de Confusión (K-Medias vs Jerárquico) ---\n")
+table(K_Medias = datos$Cluster_KMeans, Jerarquico = datos$Cluster_Jerarquico)
+```
 
