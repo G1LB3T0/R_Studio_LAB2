@@ -104,4 +104,12 @@ print(table(datos$Cluster_Jerarquico))
 cat("\n--- Matriz de Confusión (K-Medias vs Jerárquico) ---\n")
 table(K_Medias = datos$Cluster_KMeans, Jerarquico = datos$Cluster_Jerarquico)
 ```
+**Comparación de resultados:**
+Al analizar la matriz de confusión y el tamaño de los clústeres, observamos que ambos algoritmos coinciden fuertemente en los extremos, pero difieren en la forma de segmentar la gran masa de datos promedio:
+
+**Consenso en valores atípicos (Mega-éxitos):** Ambos modelos aislaron un grupo minúsculo casi idéntico. El clúster 3 de K-Medias y el clúster 6 del modelo Jerárquico agrupan a exactamente las mismas 7 películas. Por su tamaño, este grupo representa indudablemente los *outliers* más extremos del dataset (las películas con ingresos o popularidad fuera de escala).
+
+**Grupos robustos bien definidos:** Existe una coincidencia directa y casi perfecta entre el clúster 2 de K-Medias y el clúster 2 del Jerárquico, compartiendo 6,324 películas. Esto indica que hay un perfil o nicho de películas matemáticamente muy claro que ambos algoritmos logran detectar sin problema.
+
+**Diferencias en la masa central:** La mayor discrepancia ocurre en la zona de mayor densidad de datos. Por ejemplo, el clúster 5 de K-Medias agrupa a la gran mayoría de sus películas (8,977) dentro del clúster 3 del Jerárquico. Sin embargo, K-Medias fue más estricto al separar otras ~1,900 películas en su propio clúster 6, mientras que el Jerárquico prefirió aglomerarlas en su clúster 1. Esto ocurre porque K-Medias fuerza las agrupaciones en formas esféricas alrededor de sus centroides, mientras que el método aglomerativo de Ward (Jerárquico) une los puntos minimizando la varianza paso a paso.
 
