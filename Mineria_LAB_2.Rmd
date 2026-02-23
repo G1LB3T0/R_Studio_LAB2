@@ -23,6 +23,12 @@ library(hopkins)
 library(GGally) 
 library(pheatmap)
 library(hopkins)
+library(dplyr)
+library(psych)
+library(factoextra)
+library(corrplot)
+library(paran)
+library(FactoMineR)
 ```
 
 ```{r}
@@ -159,5 +165,68 @@ resumen_clusters
 
 
 ```
+El análisis de los seis clústeres revela claramente la estructura económica de la industria cinematográfica. El segmento mayoritario es el Clúster 2 (9,350 películas), que representa el "cine estándar" con presupuestos y recaudaciones moderadas. Un escalón arriba está el Clúster 3 (1,555 cintas), compuesto por estrenos comerciales exitosos que promedian 61.9 millones de presupuesto y excelentes ingresos de 170 millones. En la cima comercial se encuentra el Clúster 5 (277 películas), que agrupa a los mega-blockbusters: producciones colosales con inversiones medias de 147.7 millones que dominan absolutamente la taquilla con recaudaciones que superan los $730 millones y la mayor participación del público.
+
+Por otro lado, el modelo identificó perfiles atípicos y de nicho. El Clúster 4 agrupa solo 8 películas que son anomalías estadísticas, destacando por una popularidad viral extrema y las mejores calificaciones críticas del conjunto (7.42 de promedio). En contraste total, los Clústeres 1 y 6 suman más de 8,600 producciones con métricas financieras casi nulas y duraciones muy cortas (promediando 8.6 minutos en el clúster 6). Esto indica que se trata principalmente de cortometrajes, proyectos independientes estudiantiles o registros con datos incompletos en la plataforma original.
+
+Estos descubrimientos son altamente estratégicos para CineVision Studios, especialmente al evaluar el riesgo frente al retorno de inversión (ROI). Aunque los mega-blockbusters del Clúster 5 generan los mayores ingresos brutos, exigen arriesgar capitales corporativos masivos. La principal sugerencia para el estudio es centrar su modelo de negocio en las producciones del Clúster 3: películas con inversiones más seguras y controladas que, al mantener una buena calidad, aseguran rentabilidades altas y constantes sin exponer a la compañía al riesgo financiero de una mega-producción fallida
 
 
+# Análisis de Componentes Principales (PCA)
+## 3.1 Estudie si es posible hacer transformaciones en las variables categóricas para incluirlas en el PCA, ¿valdrá la pena?
+Técnicamente es posible transformar variables categóricas (como el idioma original, géneros o casa productora) utilizando métodos como One-Hot Encoding o variables dummy para forzar su inclusión. Sin embargo, no vale la pena ni es metodológicamente correcto para un PCA estándar. El Análisis de Componentes Principales está diseñado para maximizar la varianza lineal en variables continuas basándose en distancias euclidianas. Al introducir docenas o cientos de columnas binarias (ceros y unos), se genera una matriz muy dispersa que distorsiona las correlaciones geométricas, diluye el peso de las variables financieras verdaderamente importantes e imposibilita una interpretación clara de los componentes.
+
+## 3.2 Estudie si es conveniente hacer un Análisis de Componentes Principales. Recuerde que puede usar el índice KMO y el test de esfericidad de Bartlett.
+```{r}
+# Calcular la matriz de correlación
+rcor <- cor(datos_scaled)
+
+# Calcular el determinante de la matriz
+print(paste("Determinante de la matriz:", det(rcor)))
+
+# Test de Esfericidad de Bartlett
+test_bartlett <- cortest.bartlett(rcor, n = nrow(datos_scaled))
+print("Test de Bartlett:")
+print(test_bartlett)
+
+# Índice KMO
+indice_kmo <- KMO(rcor)
+print("Índice KMO:")
+print(indice_kmo)
+
+# Gráfico de la matriz de correlación
+corrplot(rcor, method = "circle", type = "upper", tl.col = "black", tl.srt = 45)
+```
+Para determinar la viabilidad y conveniencia de aplicar el Análisis de Componentes Principales (PCA), se evaluó la matriz de correlación de las variables numéricas mediante tres métricas estadísticas clave. Primero, el determinante de la matriz arrojó un valor de 0.0774, una cifra cercana a cero que indica la existencia de multicolinealidad, evidenciando que las variables están relacionadas linealmente entre sí. Seguidamente, el test de esfericidad de Bartlett confirmó esta relación al obtener un valor p de 0 (con un estadístico de 50862.73), lo que permite rechazar de forma contundente la hipótesis nula de que nos encontramos ante una matriz identidad, demostrando que existe una correlación suficientemente fuerte para realizar el análisis. Finalmente, el índice Kaiser-Meyer-Olkin (KMO) resultó en una adecuación muestral general (Overall MSA) de 0.73 (con valores individuales que alcanzan hasta el 0.90 en popularidad), un valor clasificado como "bueno" y muy superior al umbral de aceptación de 0.5. En conclusión, los tres indicadores respaldan sólidamente que el conjunto de datos posee la estructura relacional idónea y que es altamente conveniente proceder con la reducción de dimensionalidad mediante el PCA.
+
+
+## 3.3 Haga un análisis de componentes principales con las variables numéricas, discuta los resultados e interprete los componentes.
+```{r}
+# Aplicar PCA 
+compPrinc <- prcomp(datos_scaled, scale = FALSE) 
+
+# Resumen de varianza explicada
+summary(compPrinc)
+
+# Valores propios (Regla de Kaiser)
+valores_propios <- compPrinc$sdev^2
+print("Valores propios:")
+print(valores_propios)
+
+# Gráfico de sedimentación (Scree Plot)
+fviz_eig(compPrinc, addlabels = TRUE, ylim = c(0, 100))
+
+# Prueba de Paralelismo (Horn's Parallel Analysis)
+paran(datos_scaled, graph=TRUE)
+
+# --- Interpretación Visual ---
+# Gráfico de calidad de representación (Coseno cuadrado)
+fviz_pca_var(compPrinc, col.var = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE)
+
+# Contribución de las variables a las primeras 2 dimensiones
+fviz_contrib(compPrinc, choice = "var", axes = 1, top = 6) 
+fviz_contrib(compPrinc, choice = "var", axes = 2, top = 6)
+```
+Para determinar la cantidad de componentes a retener, se evaluó la Regla de Kaiser y la Prueba de Paralelismo de Horn. Ambas métricas indicaron conservar únicamente las dos primeras dimensiones (con valores propios de 2.96 y 1.19, respectivamente). Al seleccionar estos dos componentes, se logra explicar de manera acumulada el 69.35% de la varianza total de los datos, logrando una reducción de dimensionalidad sumamente eficiente con muy poca pérdida de información. Al analizar el círculo de correlaciones y la contribución de las variables, la naturaleza de las dimensiones queda clara. El Primer Componente (PC1) explica el 49.36% de la varianza y se define como la "Magnitud Comercial", ya que está fuertemente impulsado por revenue, voteCount y budget, resumiendo el músculo económico y de taquilla de la cinta. Por su parte, el Segundo Componente (PC2) explica el 19.99% restante y representa la "Recepción Crítica", al estar dominado por la calificación (voteAvg) y la duración (runtime). Esto demuestra que la calidad percibida de una película es independiente de los millones invertidos en ella. Finalmente, la variable popularity mostró poca representación en estos ejes, sugiriendo que la viralidad es un factor independiente y volátil.
