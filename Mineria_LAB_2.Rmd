@@ -24,18 +24,28 @@ library(GGally)
 library(pheatmap)
 ```
 
-
-
-```{r cars}
-summary(cars)
+```{r}
+# Cargamos el dataset desde la carpeta Datos
+movies <- read.csv("./Datos/movies_2026.csv")
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+# Clustering
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+## Ejercicio 1.1 Haga el preprocesamiento del dataset, explique qué variables no aportan información a la generación de grupos y por qué. Describa con qué variables calculará los grupos.
+```{r}
+# Seleccionar solo las variables numéricas que aportan información de éxito y magnitud
+datos <- movies[, c("popularity", "budget", "revenue", "runtime", "voteCount", "voteAvg")]
+
+# Quitamos valores nulos 
+set.seed(123)
+datos <- datos[complete.cases(datos),]
+
+# Escalado los datos 
+datos_scaled <- scale(datos)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Para la generación de los grupos, se descartaron las variables categóricas, fechas y de texto libre (como id, title, director, genres y releaseDate) , ya que los algoritmos de clustering se basan en el cálculo de distancias matemáticas (como la euclidiana) y su inclusión requeriría transformaciones que aumentarían drásticamente la dimensionalidad, introduciendo ruido y dificultando la interpretación de los clústeres. En su lugar, el agrupamiento se calculará utilizando exclusivamente variables numéricas que capturan la magnitud financiera y la recepción del público: popularity, budget, revenue, runtime, voteCount y voteAvg . Finalmente, estas variables seleccionadas fueron previamente escaladas para asegurar que las diferencias extremas de magnitud (por ejemplo, presupuestos en millones de dólares frente a calificaciones en una escala de 0 a 10) no dominen ni sesguen el cálculo de las distancias en el algoritmo.
+
+
+
