@@ -201,7 +201,7 @@ Para determinar la viabilidad y conveniencia de aplicar el Análisis de Componen
 
 
 ## 3.3 Haga un análisis de componentes principales con las variables numéricas, discuta los resultados e interprete los componentes.
-```{r}
+```{r, results='hide', message=FALSE}
 # Aplicar PCA 
 compPrinc <- prcomp(datos_scaled, scale = FALSE) 
 
