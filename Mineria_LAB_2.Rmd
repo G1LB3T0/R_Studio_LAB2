@@ -174,6 +174,56 @@ Por otro lado, el modelo identificó perfiles atípicos y de nicho. El Clúster 
 Estos descubrimientos son altamente estratégicos para CineVision Studios, especialmente al evaluar el riesgo frente al retorno de inversión (ROI). Aunque los mega-blockbusters del Clúster 5 generan los mayores ingresos brutos, exigen arriesgar capitales corporativos masivos. La principal sugerencia para el estudio es centrar su modelo de negocio en las producciones del Clúster 3: películas con inversiones más seguras y controladas que, al mantener una buena calidad, aseguran rentabilidades altas y constantes sin exponer a la compañía al riesgo financiero de una mega-producción fallida
 
 
+# 2. Reglas de asociación
+```{r}
+# Seleccionar variables y limpiar
+datos_reglas <- movies[, c("popularity", "budget", "revenue", "runtime", "voteCount", "voteAvg")]
+datos_reglas <- datos_reglas[complete.cases(datos_reglas),]
+
+# Discretizar (Convertir números a texto: Bajo, Medio, Alto)
+set.seed(123)
+datos_disc <- datos_reglas %>%
+  mutate(across(everything(), ~ discretize(.x, method = "cluster", breaks = 3, labels = c("Bajo", "Medio", "Alto"))))
+
+# Convertir a transacciones
+trans <- as(datos_disc, "transactions")
+
+# Gráfica para ver frecuencias
+itemFrequencyPlot(trans, topN=10, cex.names=0.8, main="Top 10 Categorías más frecuentes", col="steelblue")
+
+# Generar reglas con dos niveles distintos
+# Prueba A: Muy seguras pero menos comunes
+reglas_A <- apriori(trans, parameter = list(support = 0.05, confidence = 0.90, target = "rules", minlen=2))
+reglas_A_ordenadas <- sort(reglas_A, by = "lift")
+
+# Prueba B: Más comunes pero un poco menos seguras
+reglas_B <- apriori(trans, parameter = list(support = 0.15, confidence = 0.70, target = "rules", minlen=2))
+reglas_B_ordenadas <- sort(reglas_B, by = "lift")
+
+# Imprimir los resultados en consola para interpretarlos
+cat("\n--- TOP 5 REGLAS A (Soporte 5%, Confianza 90%) ---\n")
+inspect(head(reglas_A_ordenadas, 5))
+
+cat("\n--- TOP 5 REGLAS B (Soporte 15%, Confianza 70%) ---\n")
+inspect(head(reglas_B_ordenadas, 5))
+```
+## Eliminación de variables frecuentes
+```{r}
+# Quitar popularity y voteCount porque sesgan el modelo hacia lo "Bajo"
+datos_limpios <- dplyr::select(datos_disc, -popularity, -voteCount)
+trans_limpias <- as(datos_limpios, "transactions")
+
+# Generar nuevas reglas buscando relaciones entre presupuesto, duración y éxito
+reglas_limpias <- apriori(trans_limpias, parameter = list(support = 0.05, confidence = 0.60, target = "rules", minlen=2))
+reglas_limpias_ordenadas <- sort(reglas_limpias, by = "lift")
+
+cat("\n--- NUEVAS REGLAS (Sin Popularity ni VoteCount) ---\n")
+inspect(head(reglas_limpias_ordenadas, 5))
+```
+La ejecución inicial del algoritmo Apriori reveló que las asociaciones estaban monopolizadas por atributos en su nivel "Bajo". Al evaluar las frecuencias, se evidenció que categorías como popularity=Bajo y voteCount=Bajo dominaban casi el 95% de las transacciones, reflejando un conjunto de datos saturado de producciones sin impacto comercial. Atendiendo a la necesidad de obtener insights estratégicos, se tomó la decisión metodológica de eliminar ambas variables del modelo. Al suprimir este ruido estadístico, el algoritmo logró descubrir correlaciones subyacentes mucho más valiosas sobre la dinámica de inversión y éxito. Por ejemplo, en las nuevas reglas generadas se descubrió que una película con un presupuesto Medio (budget=Medio) deriva sistemáticamente en una calificación crítica promedio o aceptable (voteAvg=Medio), hallazgo respaldado por una confianza del 69.8% y un indicador Lift de 2.03. Esta depuración confirma que las reglas de asociación son más efectivas cuando se aísla el ruido de las producciones irrelevantes, permitiendo a CineVision Studios identificar los verdaderos impulsores del éxito o fracaso en taquilla.
+
+
+
 # Análisis de Componentes Principales (PCA)
 ## 3.1 Estudie si es posible hacer transformaciones en las variables categóricas para incluirlas en el PCA, ¿valdrá la pena?
 Técnicamente es posible transformar variables categóricas (como el idioma original, géneros o casa productora) utilizando métodos como One-Hot Encoding o variables dummy para forzar su inclusión. Sin embargo, no vale la pena ni es metodológicamente correcto para un PCA estándar. El Análisis de Componentes Principales está diseñado para maximizar la varianza lineal en variables continuas basándose en distancias euclidianas. Al introducir docenas o cientos de columnas binarias (ceros y unos), se genera una matriz muy dispersa que distorsiona las correlaciones geométricas, diluye el peso de las variables financieras verdaderamente importantes e imposibilita una interpretación clara de los componentes.
