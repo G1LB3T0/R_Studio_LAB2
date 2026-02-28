@@ -29,6 +29,8 @@ library(factoextra)
 library(corrplot)
 library(paran)
 library(FactoMineR)
+library(arules)
+library(arulesViz)
 ```
 
 ```{r}
