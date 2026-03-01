@@ -31,6 +31,9 @@ library(paran)
 library(FactoMineR)
 library(arules)
 library(arulesViz)
+library(Rtsne)
+library(ggplot2)
+
 ```
 
 ```{r}
@@ -282,3 +285,36 @@ fviz_contrib(compPrinc, choice = "var", axes = 1, top = 6)
 fviz_contrib(compPrinc, choice = "var", axes = 2, top = 6)
 ```
 Para determinar la cantidad de componentes a retener, se evaluó la Regla de Kaiser y la Prueba de Paralelismo de Horn. Ambas métricas indicaron conservar únicamente las dos primeras dimensiones (con valores propios de 2.96 y 1.19, respectivamente). Al seleccionar estos dos componentes, se logra explicar de manera acumulada el 69.35% de la varianza total de los datos, logrando una reducción de dimensionalidad sumamente eficiente con muy poca pérdida de información. Al analizar el círculo de correlaciones y la contribución de las variables, la naturaleza de las dimensiones queda clara. El Primer Componente (PC1) explica el 49.36% de la varianza y se define como la "Magnitud Comercial", ya que está fuertemente impulsado por revenue, voteCount y budget, resumiendo el músculo económico y de taquilla de la cinta. Por su parte, el Segundo Componente (PC2) explica el 19.99% restante y representa la "Recepción Crítica", al estar dominado por la calificación (voteAvg) y la duración (runtime). Esto demuestra que la calidad percibida de una película es independiente de los millones invertidos en ella. Finalmente, la variable popularity mostró poca representación en estos ejes, sugiriendo que la viralidad es un factor independiente y volátil.
+
+## 4.1 Utilice uno de los algoritmos mencionados en la sección de instrucciones, explique por qué lo eligió para usarlo
+## en este conjunto de datos en particular.
+```{r}
+set.seed(123)
+
+idx_unique <- !duplicated(datos_scaled)
+datos_scaled_u <- datos_scaled[idx_unique, ]
+km_u <- km
+km_u$cluster <- km$cluster[idx_unique]
+
+tsne_model <- Rtsne(datos_scaled_u,
+                    dims = 2,
+                    perplexity = 30,
+                    max_iter = 1000,
+                    verbose = TRUE)
+
+tsne_df <- data.frame(
+  Dim1 = tsne_model$Y[,1],
+  Dim2 = tsne_model$Y[,2],
+  Cluster = as.factor(km_u$cluster)
+)
+
+ggplot(tsne_df, aes(x = Dim1, y = Dim2, color = Cluster)) +
+  geom_point(alpha = 0.6) +
+  theme_minimal() +
+  labs(title = "Visualización t-SNE de las películas",
+       x = "Dimensión 1",
+       y = "Dimensión 2")
+```
+Se seleccionó el algoritmo t-SNE debido a su capacidad para capturar estructuras no lineales en datos de alta dimensión. A diferencia del PCA, que maximiza varianza bajo supuestos lineales, t-SNE preserva relaciones locales entre observaciones, lo que permite identificar agrupaciones complejas que podrían no ser visibles mediante técnicas lineales.
+
+Se observa una gran masa central (Cluster 5) que concentra la mayoría de las películas. Esto indica que existe un segmento dominante del mercado cinematográfico con características financieras y de recepción similares, lo que confirma que gran parte de la industria se mueve en rangos económicos intermedios.
