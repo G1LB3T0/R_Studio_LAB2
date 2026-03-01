@@ -6,14 +6,13 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
 ## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+LINK DEL REPOSITORIO: https://github.com/G1LB3T0/R_Studio_LAB2.git
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 ```{r}
 library(cluster) 
 library(fpc) 
@@ -318,3 +317,13 @@ ggplot(tsne_df, aes(x = Dim1, y = Dim2, color = Cluster)) +
 Se seleccionó el algoritmo t-SNE debido a su capacidad para capturar estructuras no lineales en datos de alta dimensión. A diferencia del PCA, que maximiza varianza bajo supuestos lineales, t-SNE preserva relaciones locales entre observaciones, lo que permite identificar agrupaciones complejas que podrían no ser visibles mediante técnicas lineales.
 
 Se observa una gran masa central (Cluster 5) que concentra la mayoría de las películas. Esto indica que existe un segmento dominante del mercado cinematográfico con características financieras y de recepción similares, lo que confirma que gran parte de la industria se mueve en rangos económicos intermedios.
+
+## 4.2. Interprete los resultados obtenidos y explique la relevancia o no relevancia de los hallazgos.
+
+Al analizar la proyección generada por el algoritmo t-SNE, se validan y profundizan los hallazgos que obtuvimos previamente con K-Medias y PCA. La relevancia de este gráfico radica en que logra mapear las relaciones no lineales entre las películas, mostrando agrupaciones complejas y topologías que no eran tan evidentes mediante las técnicas lineales.
+
+Lo que más resalta a simple vista es la enorme masa central consolidada, dominada casi en su totalidad por el Clúster 5 (los puntos azules). La relevancia de este hallazgo es que demuestra de forma gráfica cómo la inmensa mayoría de las producciones comparten un comportamiento financiero y de recepción sumamente similar. Al ser un bloque tan denso, nos confirma que el mercado cinematográfico estándar está bastante saturado; es un entorno donde es sumamente difícil que una cinta promedio logre diferenciarse visual o estadísticamente del resto de su competencia.
+
+Al observar la periferia del gráfico, vemos que clústeres como el 2 (oliva) y el 6 (magenta) tienen un comportamiento muy disperso, formando arcos inconexos alrededor de la masa principal. Esta falta de cohesión espacial es un hallazgo clave porque confirma empíricamente que estos grupos no siguen un patrón de mercado estructurado. Al tratarse de las anomalías estadísticas y proyectos atípicos detectados antes, quedan representados gráficamente como ruido, indicándole a Cine Vision Studios que sería un error basar proyecciones de inversión en un perfil tan errático.
+
+En contraste, el Clúster 4 (color turquesa) se proyecta como un bloque bastante sólido, denso y claramente desplazado hacia un nicho propio, adyacente pero independiente del aglomeramiento central. Esto tiene muchísima relevancia estratégica para el estudio. Nos permite visualizar de forma clara ese segmento de películas de presupuesto medio y alta rentabilidad. Comprueba gráficamente que sí existe un ecosistema de éxito comercial estable que logra aislarse de la masa promedio, ofreciendo un modelo de negocio mucho más seguro y alejado del riesgo que representan las periferias dispersas.
